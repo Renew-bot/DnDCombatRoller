@@ -43,27 +43,6 @@ utilisée en **paysage**, à côté de la table, sans manipulation superflue.
   lancement, volontairement).
 - **Mise en page adaptative** : disposition dédiée en portrait et en paysage.
 
-### Captures d'écran conceptuelles
-
-```
-┌────────────────────────────────────────────────────────────────────┐
-│  [Barre d'actions rapides]              [Nom du personnage / round] │
-├─────────────────────────┬──────────────────────────────────────────┤
-│                          │                                          │
-│   Liste des Attaques     │        Zone de résultats des jets        │
-│   (scroll vertical)      │        (historique + total)              │
-│                          │                                          │
-│   ┌─────────────────┐    │   ┌──────────────────────────────────┐  │
-│   │  Attaque #1      │   │   │  Touche : 1d20+5 → 17 ✓           │  │
-│   │  Attaque #2      │   │   │  Dégâts : 1d8+3 → 6               │  │
-│   │  + Ajouter       │   │   │  ──────────────────────────────   │  │
-│   └─────────────────┘    │   │  [historique des jets précédents] │  │
-│                          │   └──────────────────────────────────┘  │
-├─────────────────────────┴──────────────────────────────────────────┤
-│              [Bouton LANCER / RELANCER]                             │
-└────────────────────────────────────────────────────────────────────┘
-```
-
 ### Architecture
 
 Projet **Kotlin Multiplatform (KMP)**, cible principale Android, avec cibles
@@ -184,27 +163,6 @@ turns.
   sessions (damage counter and history are intentionally reset on every
   launch).
 - **Adaptive layout**: dedicated layouts for portrait and landscape.
-
-### Conceptual screen layout
-
-```
-┌────────────────────────────────────────────────────────────────────┐
-│  [Quick action bar]                     [Character name / round]    │
-├─────────────────────────┬──────────────────────────────────────────┤
-│                          │                                          │
-│   Attack list            │        Roll results area                 │
-│   (vertical scroll)      │        (history + total)                 │
-│                          │                                          │
-│   ┌─────────────────┐    │   ┌──────────────────────────────────┐  │
-│   │  Attack #1       │   │   │  To-hit: 1d20+5 → 17 ✓             │  │
-│   │  Attack #2       │   │   │  Damage: 1d8+3 → 6                 │  │
-│   │  + Add            │   │   │  ──────────────────────────────   │  │
-│   └─────────────────┘    │   │  [previous rolls history]          │  │
-│                          │   └──────────────────────────────────┘  │
-├─────────────────────────┴──────────────────────────────────────────┤
-│                    [ROLL / REROLL button]                           │
-└────────────────────────────────────────────────────────────────────┘
-```
 
 ### Architecture
 
