@@ -1,6 +1,8 @@
 package com.example.dndcombatroller.data
 
 import com.example.dndcombatroller.domain.model.Attaque
+import com.example.dndcombatroller.domain.model.FichePersonnage
+import com.example.dndcombatroller.domain.model.PointsDeVie
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -14,6 +16,8 @@ import java.io.File
 private data class SaveData(
     val attaques: List<Attaque> = emptyList(),
     val nomPersonnage: String = "",
+    val fiche: FichePersonnage? = null,
+    val pointsDeVie: PointsDeVie = PointsDeVie(),
 )
 
 class JsonCombatRepository : CombatRepository {
@@ -51,4 +55,16 @@ class JsonCombatRepository : CombatRepository {
 
     override suspend fun sauvegarderNomPersonnage(nom: String) =
         withContext(Dispatchers.IO) { mutex.withLock { ecrireCache(lireCache().copy(nomPersonnage = nom)) } }
+
+    override suspend fun chargerFiche(): FichePersonnage? =
+        withContext(Dispatchers.IO) { mutex.withLock { lireCache().fiche } }
+
+    override suspend fun sauvegarderFiche(fiche: FichePersonnage) =
+        withContext(Dispatchers.IO) { mutex.withLock { ecrireCache(lireCache().copy(fiche = fiche)) } }
+
+    override suspend fun chargerPointsDeVie(): PointsDeVie =
+        withContext(Dispatchers.IO) { mutex.withLock { lireCache().pointsDeVie } }
+
+    override suspend fun sauvegarderPointsDeVie(pointsDeVie: PointsDeVie) =
+        withContext(Dispatchers.IO) { mutex.withLock { ecrireCache(lireCache().copy(pointsDeVie = pointsDeVie)) } }
 }

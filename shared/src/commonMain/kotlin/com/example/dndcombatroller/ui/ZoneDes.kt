@@ -1,5 +1,3 @@
-@file:OptIn(ExperimentalMaterial3Api::class)
-
 package com.example.dndcombatroller.ui
 
 import androidx.compose.foundation.layout.Arrangement
@@ -16,12 +14,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.SegmentedButton
-import androidx.compose.material3.SegmentedButtonDefaults
-import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -43,6 +37,7 @@ import androidx.compose.animation.slideOutVertically
 import androidx.compose.animation.togetherWith
 import com.example.dndcombatroller.domain.model.TypeAvantage
 import com.example.dndcombatroller.domain.model.TypeJet
+import com.example.dndcombatroller.ui.theme.FormeCarte
 
 private fun TypeAvantage.label() = when (this) {
     TypeAvantage.AVANTAGE -> "Avantage"
@@ -72,6 +67,7 @@ fun ZoneDes(
     onIncrementerModificateurFlat: (Int) -> Unit,
     onDefinirAvantage: (TypeAvantage) -> Unit,
     modePortrait: Boolean = false,
+    afficherProchain: Boolean = true,
     modifier: Modifier = Modifier,
 ) {
     Row(
@@ -91,24 +87,27 @@ fun ZoneDes(
             onIncrementerModificateurFlat = onIncrementerModificateurFlat,
             onDefinirAvantage = onDefinirAvantage,
             modePortrait = modePortrait,
-            modifier = Modifier
-                .weight(2f)
-                .fillMaxHeight(),
+            modifier = if (afficherProchain)
+                Modifier.weight(2f).fillMaxHeight()
+            else
+                Modifier.fillMaxWidth().fillMaxHeight(),
         )
 
-        Text(
-            text = "→",
-            style = MaterialTheme.typography.headlineSmall,
-            color = MaterialTheme.colorScheme.outline,
-        )
+        if (afficherProchain) {
+            Text(
+                text = "→",
+                style = MaterialTheme.typography.headlineSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
 
-        CarteProchainsDes(
-            prochainsDes = prochainsDes,
-            estTexte = prochainEstTexte,
-            modifier = Modifier
-                .weight(1f)
-                .fillMaxHeight(),
-        )
+            CarteProchainsDes(
+                prochainsDes = prochainsDes,
+                estTexte = prochainEstTexte,
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxHeight(),
+            )
+        }
 
         if (!modePortrait) {
             CompteurDegats(
@@ -136,7 +135,7 @@ private fun CarteDes(
 ) {
     Card(
         modifier = modifier,
-        shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp),
+        shape = FormeCarte,
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.secondaryContainer,
         ),
@@ -297,21 +296,14 @@ private fun ControleAvantage(
     actif: Boolean,
     onSelectionner: (TypeAvantage) -> Unit,
 ) {
-    SingleChoiceSegmentedButtonRow {
-        ORDRE_AVANTAGE.forEachIndexed { i, type ->
-            SegmentedButton(
-                selected = avantage == type,
+    Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+        ORDRE_AVANTAGE.forEach { type ->
+            BoutonBascule(
+                texte = type.label(),
+                selectionne = avantage == type,
                 onClick = { onSelectionner(type) },
-                enabled = actif || type == TypeAvantage.NORMAL,
-                shape = SegmentedButtonDefaults.itemShape(index = i, count = ORDRE_AVANTAGE.size),
-            ) {
-                Text(
-                    text = type.label(),
-                    style = MaterialTheme.typography.labelSmall,
-                    maxLines = 1,
-                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
-                )
-            }
+                actif = actif || type == TypeAvantage.NORMAL,
+            )
         }
     }
 }
@@ -324,7 +316,7 @@ private fun CarteProchainsDes(
 ) {
     Card(
         modifier = modifier,
-        shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp),
+        shape = FormeCarte,
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceVariant,
         ),

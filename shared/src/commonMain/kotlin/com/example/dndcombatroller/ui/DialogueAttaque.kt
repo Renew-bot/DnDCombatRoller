@@ -1,7 +1,6 @@
-@file:OptIn(ExperimentalMaterial3Api::class)
-
 package com.example.dndcombatroller.ui
 
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -17,13 +16,9 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.SegmentedButton
-import androidx.compose.material3.SegmentedButtonDefaults
-import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -36,6 +31,7 @@ import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
@@ -44,6 +40,8 @@ import com.example.dndcombatroller.domain.engine.ResultatParsage
 import com.example.dndcombatroller.domain.model.Attaque
 import com.example.dndcombatroller.domain.model.EtapeDeJet
 import com.example.dndcombatroller.domain.model.TypeJet
+import com.example.dndcombatroller.ui.theme.FormeBouton
+import com.example.dndcombatroller.ui.theme.FormeCarte
 
 private data class EtapeBrouillon(
     val libelle: String = "",
@@ -81,9 +79,9 @@ fun DialogueAttaque(
             modifier = Modifier
                 .fillMaxWidth(0.85f)
                 .fillMaxHeight(0.9f),
-            shape = MaterialTheme.shapes.large,
+            shape = FormeCarte,
             color = MaterialTheme.colorScheme.surface,
-            tonalElevation = 6.dp,
+            tonalElevation = 0.dp,
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
                 Text(
@@ -133,6 +131,7 @@ fun DialogueAttaque(
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(40.dp),
+                        shape = FormeBouton,
                     ) {
                         Text("+ Ajouter une étape")
                     }
@@ -148,10 +147,12 @@ fun DialogueAttaque(
                     TextButton(
                         onClick = onDismiss,
                         modifier = Modifier.height(36.dp),
+                        shape = FormeBouton,
                     ) {
                         Text("Annuler")
                     }
                     Button(
+                        shape = FormeBouton,
                         onClick = {
                             nomErreur = nom.isBlank()
                             val expressionsOk = etapes.all {
@@ -194,9 +195,12 @@ private fun EtapeItem(
         && !expressionValide(etape.expression)
 
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .border(1.dp, MaterialTheme.colorScheme.outline, FormeBouton),
+        shape = FormeBouton,
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant,
+            containerColor = Color.White,
         ),
     ) {
         Column(
@@ -258,19 +262,17 @@ private fun EtapeItem(
                 )
             }
 
-            SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
-                TypeJet.entries.forEachIndexed { i, type ->
-                    SegmentedButton(
-                        selected = etape.type == type,
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+            ) {
+                TypeJet.entries.forEach { type ->
+                    BoutonBascule(
+                        texte = type.label(),
+                        selectionne = etape.type == type,
                         onClick = { onUpdate(etape.copy(type = type)) },
-                        shape = SegmentedButtonDefaults.itemShape(
-                            index = i,
-                            count = TypeJet.entries.size,
-                        ),
-                        modifier = Modifier.height(36.dp),
-                    ) {
-                        Text(type.label())
-                    }
+                        modifier = Modifier.weight(1f),
+                    )
                 }
             }
         }

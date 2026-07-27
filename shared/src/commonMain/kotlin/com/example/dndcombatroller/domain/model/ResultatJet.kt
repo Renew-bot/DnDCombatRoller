@@ -7,4 +7,6 @@ data class ResultatJet(
     val modificateurFlat: Int,
     val total: Int,
     val avantage: TypeAvantage,
+    val estNatural20: Boolean = false,
+    val estNatural1: Boolean = false,
 )

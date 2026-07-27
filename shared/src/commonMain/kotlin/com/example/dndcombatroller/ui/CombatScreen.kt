@@ -8,7 +8,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.safeDrawingPadding
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -77,7 +80,13 @@ fun CombatScreenContent(
         }
     } ?: false
 
-    BoxWithConstraints(modifier = modifier.fillMaxSize().safeDrawingPadding()) {
+    val lancerActif = etat.idAttaqueSelectionnee != null
+
+    Surface(
+        modifier = modifier.fillMaxSize(),
+        color = MaterialTheme.colorScheme.background,
+    ) {
+    BoxWithConstraints(modifier = Modifier.fillMaxSize().safeDrawingPadding()) {
         if (maxWidth < maxHeight) {
             Column(modifier = Modifier.fillMaxSize()) {
                 BarreHaut(
@@ -104,30 +113,23 @@ fun CombatScreenContent(
                     onIncrementerModificateurFlat = onIncrementerModificateurFlat,
                     onDefinirAvantage = onDefinirAvantage,
                     modePortrait = true,
-                    modifier = Modifier.height(175.dp),
+                    afficherProchain = false,
+                    modifier = Modifier.height(160.dp),
                 )
 
-                HorizontalDivider()
-
-                PanneauAttaques(
+                PanneauLateral(
                     attaques = etat.attaques,
                     idAttaqueSelectionnee = etat.idAttaqueSelectionnee,
+                    historique = etat.historique,
                     onSelectionnerAttaque = onSelectionnerAttaque,
                     onAjouterAttaque = onAjouterAttaque,
                     onModifierAttaque = onModifierAttaque,
                     onSupprimerAttaque = onSupprimerAttaque,
                     onDeplacerAttaque = onDeplacerAttaque,
-                    onLancer = onLancer,
+                    afficherBoutonLancer = false,
                     modifier = Modifier
-                        .weight(2f)
+                        .weight(1f)
                         .fillMaxWidth(),
-                )
-
-                HorizontalDivider()
-
-                Historique(
-                    entrees = etat.historique,
-                    modifier = Modifier.weight(1f),
                 )
 
                 HorizontalDivider()
@@ -137,21 +139,26 @@ fun CombatScreenContent(
                     onAnnuler = onAnnuler,
                     onRefaire = onRefaire,
                     onFinDuTour = onFinDuTour,
+                    modePortrait = true,
+                    onLancer = onLancer,
+                    lancerActif = lancerActif,
                 )
             }
         } else {
             Row(modifier = Modifier.fillMaxSize()) {
-                PanneauAttaques(
+                PanneauLateral(
                     attaques = etat.attaques,
                     idAttaqueSelectionnee = etat.idAttaqueSelectionnee,
+                    historique = etat.historique,
                     onSelectionnerAttaque = onSelectionnerAttaque,
                     onAjouterAttaque = onAjouterAttaque,
                     onModifierAttaque = onModifierAttaque,
                     onSupprimerAttaque = onSupprimerAttaque,
                     onDeplacerAttaque = onDeplacerAttaque,
+                    afficherBoutonLancer = true,
                     onLancer = onLancer,
                     modifier = Modifier
-                        .weight(1f)
+                        .width(230.dp)
                         .fillMaxHeight(),
                 )
 
@@ -159,7 +166,7 @@ fun CombatScreenContent(
 
                 Column(
                     modifier = Modifier
-                        .weight(3.5f)
+                        .weight(1f)
                         .fillMaxHeight(),
                 ) {
                     BarreHaut(
@@ -183,13 +190,6 @@ fun CombatScreenContent(
                         degatsDuTour = etat.degatsDuTour,
                         onIncrementerModificateurFlat = onIncrementerModificateurFlat,
                         onDefinirAvantage = onDefinirAvantage,
-                        modifier = Modifier.height(130.dp),
-                    )
-
-                    HorizontalDivider()
-
-                    Historique(
-                        entrees = etat.historique,
                         modifier = Modifier.weight(1f),
                     )
 
@@ -204,6 +204,7 @@ fun CombatScreenContent(
                 }
             }
         }
+    }
     }
 }
 

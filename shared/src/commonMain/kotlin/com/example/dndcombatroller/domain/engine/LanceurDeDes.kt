@@ -43,6 +43,8 @@ class LanceurDeDes(private val source: SourceAleatoire = SourceAleatoireParDefau
             modificateurFlat = modificateurFlat,
             total = valeurGardee + succes.modificateur + modificateurFlat,
             avantage = avantageEffectif,
+            estNatural20 = estD20Unique && valeurGardee == 20,
+            estNatural1 = estD20Unique && valeurGardee == 1,
         )
     }
 }

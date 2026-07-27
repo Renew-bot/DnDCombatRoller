@@ -18,6 +18,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.example.dndcombatroller.domain.model.ResultatJet
 import com.example.dndcombatroller.domain.model.TypeAvantage
+import com.example.dndcombatroller.ui.theme.OrNatural20Texte
+import com.example.dndcombatroller.ui.theme.RougeNatural1Texte
 
 @Composable
 fun Historique(
@@ -72,17 +74,32 @@ private fun EntreeHistoriqueItem(entree: EntreeHistorique) {
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
                 if (entree.resultat != null) {
+                    if (entree.resultat.estNatural20) {
+                        Text(
+                            text = "NATURAL 20 !",
+                            style = MaterialTheme.typography.labelSmall,
+                            fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
+                            color = OrNatural20Texte,
+                        )
+                    } else if (entree.resultat.estNatural1) {
+                        Text(
+                            text = "NATURAL 1",
+                            style = MaterialTheme.typography.labelSmall,
+                            fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
+                            color = RougeNatural1Texte,
+                        )
+                    }
                     Text(
                         text = buildDetail(entree.resultat),
                         style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.outline,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 } else if (entree.texte != null) {
                     val texteAffiche = if (entree.texte.length > 50) entree.texte.take(47) + "..." else entree.texte
                     Text(
                         text = texteAffiche,
                         style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.outline,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
             }
@@ -91,7 +108,11 @@ private fun EntreeHistoriqueItem(entree: EntreeHistorique) {
                     text = "→ ${entree.resultat.total}",
                     style = MaterialTheme.typography.titleSmall,
                     fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.secondary,
+                    color = when {
+                        entree.resultat.estNatural20 -> OrNatural20Texte
+                        entree.resultat.estNatural1 -> RougeNatural1Texte
+                        else -> MaterialTheme.colorScheme.secondary
+                    },
                 )
             }
         }

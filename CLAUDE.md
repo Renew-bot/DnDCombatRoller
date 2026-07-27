@@ -87,8 +87,12 @@ CombatScreen (Composable)
 ## Accessibilité
 
 - `contentDescription` ajouté sur : bouton Fiche (BarreHaut), Annuler/Refaire (BarreBas), +/− modificateur (ZoneDes).
-- `semantics { selected = … }` sur les cartes d'attaque (PanneauAttaques).
-- Thème sombre : `DnDOr` (`0xFFFFD700`) sur fond `DnDNoir` (`0xFF1A1A2E`) — contraste correct pour les valeurs primaires.
+- `semantics { selected = … }` sur les cartes d'attaque (PanneauLateral).
+- Charte graphique « Parchemin de campagne » : palette claire tons cuir/parchemin/or, unique
+  (pas de variante sombre adaptative). Tokens dans `ui/theme/Color.kt` (`ParcheminFond`,
+  `ParcheminCarte`, `CuirBordeaux`, `OrResultat`, `VertSauge`, `EncreTexte`…) et formes
+  rectangulaires arrondies (`ui/theme/Shape.kt`, `FormeBouton`/`FormeCarte`) — plus de pilules,
+  dégradés ni ombres portées fortes.
 
 ---
 
@@ -96,25 +100,28 @@ CombatScreen (Composable)
 
 ```
 ┌────────────────────────────────────────────────────────────────────┐
-│  [Barre d'actions rapides]              [Nom du personnage / round] │
+│  [Nom du personnage]                                       [Fiche] │
 ├─────────────────────────┬──────────────────────────────────────────┤
-│                         │                                          │
-│   Liste des Attaques    │        Zone de résultats des jets        │
-│   (scroll vertical)     │        (historique + total)              │
-│                         │                                          │
-│   ┌─────────────────┐   │   ┌──────────────────────────────────┐  │
-│   │  Attaque #1     │   │   │  Touche : 1d20+5 → 17 ✓         │  │
-│   │  Attaque #2     │   │   │  Dégâts : 1d8+3 → 6              │  │
-│   │  + Ajouter      │   │   │  ──────────────────────────────  │  │
-│   └─────────────────┘   │   │  [historique des jets précédents] │  │
-│                         │   └──────────────────────────────────┘  │
-├─────────────────────────┴──────────────────────────────────────────┤
-│              [Bouton LANCER / RELANCER]                             │
-└────────────────────────────────────────────────────────────────────┘
+│  [Attaques] [Historique] │        Résultat du dernier jet          │
+│                          ├──────────────────────────────────────────┤
+│   ┌─────────────────┐    │   Étape en cours   │  Prochain │ dmg/tour│
+│   │  + Ajouter      │   │   1d20+5  [–2+]  [Avantage|Normal|Désav.] │
+│   │  Attaque #1  ✎✕ │   ├──────────────────────────────────────────┤
+│   │  Attaque #2     │   │  [↩ Annuler] [↪ Refaire]   [Fin du tour]  │
+│   └─────────────────┘   │                                          │
+│   [    LANCER     ]     │                                          │
+└─────────────────────────┴──────────────────────────────────────────┘
 ```
 
+En portrait, la colonne latérale (onglets Attaques/Historique) passe sous la carte
+« étape en cours » et le bouton LANCER rejoint la barre du bas (avec Annuler/Refaire
+compacts et Fin du tour) plutôt que de rester dans le panneau latéral.
+
 ### Zones nommées
-- **PanneauAttaques** — liste configurable des `Attaque` du joueur
-- **ZoneResultats** — affichage du détail du dernier jet + historique
-- **BoutonLancer** — déclenche le jet via `CombatViewModel`
-- **BarreActions** — actions globales (reset, configuration, personnage)
+- **PanneauLateral** — colonne à onglets **Attaques** / **Historique** (fusionnés) : liste
+  configurable des `Attaque` avec icônes ✎/✕ inline sur l'item sélectionné, ou journal des
+  jets ; contient le bouton **LANCER** en paysage uniquement.
+- **ZoneDes** — carte de l'étape de jet en cours + aperçu de la prochaine étape (masqué en
+  portrait) + compteur de dégâts du tour.
+- **BarreHaut** — nom du personnage, bouton Fiche, résultat du dernier jet.
+- **BarreBas** — Annuler / Refaire / Fin du tour, et bouton **LANCER** en portrait uniquement.

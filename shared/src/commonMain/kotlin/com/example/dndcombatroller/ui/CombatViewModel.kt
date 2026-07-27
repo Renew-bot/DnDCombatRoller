@@ -6,9 +6,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.dndcombatroller.data.CombatRepository
 import com.example.dndcombatroller.data.InMemoryCombatRepository
+import com.example.dndcombatroller.domain.engine.FichePersonnageParseur
 import com.example.dndcombatroller.domain.engine.LanceurDeDes
 import com.example.dndcombatroller.domain.model.Attaque
 import com.example.dndcombatroller.domain.model.EtapeDeJet
+import com.example.dndcombatroller.domain.model.PointsDeVie
 import com.example.dndcombatroller.domain.model.TypeAvantage
 import com.example.dndcombatroller.domain.model.TypeJet
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -32,11 +34,16 @@ class CombatViewModel(
         lancerSuspend {
             val attaquesChargees = repository.chargerAttaques()
             val nom = repository.chargerNomPersonnage()
+            val fiche = repository.chargerFiche()
+            val pointsDeVie = repository.chargerPointsDeVie()
             // Remplace l'état initial uniquement si le dépôt contient des données persistées
-            if (attaquesChargees.isNotEmpty() || nom.isNotEmpty()) {
+            if (attaquesChargees.isNotEmpty() || nom.isNotEmpty() || fiche != null) {
                 _uiState.value = EtatCombat(
                     attaques = attaquesChargees.ifEmpty { listOf(attaqueDelugeDeCoups()) },
                     nomPersonnage = nom,
+                    fiche = fiche,
+                    pvActuel = pointsDeVie.actuels,
+                    pvTemporaires = pointsDeVie.temporaires,
                 )
             }
         }
@@ -161,6 +168,47 @@ class CombatViewModel(
         // Pas dans appliquer : chaque frappe ne doit pas encombrer la pile d'annulation
         _uiState.value = _uiState.value.copy(nomPersonnage = nom)
         lancerSuspend { repository.sauvegarderNomPersonnage(nom) }
+    }
+
+    fun importerFiche(texteHtml: String) {
+        val fiche = FichePersonnageParseur.parse(texteHtml) ?: return
+        val pointsDeVie = PointsDeVie(actuels = fiche.pvMax.toIntOrNull() ?: 0, temporaires = 0)
+        _uiState.value = _uiState.value.copy(
+            fiche = fiche,
+            pvActuel = pointsDeVie.actuels,
+            pvTemporaires = pointsDeVie.temporaires,
+        )
+        lancerSuspend {
+            repository.sauvegarderFiche(fiche)
+            repository.sauvegarderPointsDeVie(pointsDeVie)
+        }
+    }
+
+    fun ajusterPvActuel(delta: Int) {
+        val etat = _uiState.value
+        val max = etat.fiche?.pvMax?.toIntOrNull()
+
+        // Les dégâts entament d'abord les PV temporaires ; le soin ne restaure que les PV normaux.
+        val (nouveauActuel, nouveauTemporaires) = if (delta < 0) {
+            val degats = -delta
+            val absorbes = minOf(degats, etat.pvTemporaires)
+            val degatsRestants = degats - absorbes
+            val actuel = (etat.pvActuel - degatsRestants).let { v -> if (max != null) v.coerceIn(0, max) else v.coerceAtLeast(0) }
+            actuel to (etat.pvTemporaires - absorbes)
+        } else {
+            val actuel = (etat.pvActuel + delta).let { v -> if (max != null) v.coerceIn(0, max) else v.coerceAtLeast(0) }
+            actuel to etat.pvTemporaires
+        }
+
+        _uiState.value = etat.copy(pvActuel = nouveauActuel, pvTemporaires = nouveauTemporaires)
+        lancerSuspend { repository.sauvegarderPointsDeVie(PointsDeVie(nouveauActuel, nouveauTemporaires)) }
+    }
+
+    fun ajusterPvTemporaires(delta: Int) {
+        val etat = _uiState.value
+        val nouveau = (etat.pvTemporaires + delta).coerceAtLeast(0)
+        _uiState.value = etat.copy(pvTemporaires = nouveau)
+        lancerSuspend { repository.sauvegarderPointsDeVie(PointsDeVie(etat.pvActuel, nouveau)) }
     }
 
     fun annuler() {

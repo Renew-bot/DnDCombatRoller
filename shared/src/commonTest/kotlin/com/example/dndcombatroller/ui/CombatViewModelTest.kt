@@ -225,4 +225,55 @@ class CombatViewModelTest {
 
         assertEquals(etatInitial, vm.uiState.value)
     }
+
+    // --- ajusterPvActuel() : les PV temporaires absorbent les dégâts en premier ---
+
+    @Test
+    fun `retirer des PV entame d abord les PV temporaires`() {
+        val vm = creerViewModel()
+        vm.ajusterPvActuel(10)
+        vm.ajusterPvTemporaires(5)
+
+        vm.ajusterPvActuel(-6)
+
+        assertEquals(9, vm.uiState.value.pvActuel)
+        assertEquals(0, vm.uiState.value.pvTemporaires)
+    }
+
+    @Test
+    fun `retirer moins de PV que les PV temporaires ne touche pas les PV normaux`() {
+        val vm = creerViewModel()
+        vm.ajusterPvActuel(10)
+        vm.ajusterPvTemporaires(5)
+
+        vm.ajusterPvActuel(-4)
+
+        assertEquals(10, vm.uiState.value.pvActuel)
+        assertEquals(1, vm.uiState.value.pvTemporaires)
+    }
+
+    @Test
+    fun `soigner ne restaure pas les PV temporaires`() {
+        val vm = creerViewModel()
+        vm.ajusterPvActuel(10)
+        vm.ajusterPvTemporaires(5)
+        vm.ajusterPvActuel(-6) // pv=9, temp=0
+
+        vm.ajusterPvActuel(3)
+
+        assertEquals(12, vm.uiState.value.pvActuel)
+        assertEquals(0, vm.uiState.value.pvTemporaires)
+    }
+
+    @Test
+    fun `retirer plus de PV que le total ne descend pas sous zero`() {
+        val vm = creerViewModel()
+        vm.ajusterPvActuel(10)
+        vm.ajusterPvTemporaires(2)
+
+        vm.ajusterPvActuel(-50)
+
+        assertEquals(0, vm.uiState.value.pvActuel)
+        assertEquals(0, vm.uiState.value.pvTemporaires)
+    }
 }

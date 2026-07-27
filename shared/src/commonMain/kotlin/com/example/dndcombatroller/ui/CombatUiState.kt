@@ -1,6 +1,7 @@
 package com.example.dndcombatroller.ui
 
 import com.example.dndcombatroller.domain.model.Attaque
+import com.example.dndcombatroller.domain.model.FichePersonnage
 import com.example.dndcombatroller.domain.model.ResultatJet
 import com.example.dndcombatroller.domain.model.TypeAvantage
 import com.example.dndcombatroller.domain.model.TypeJet
@@ -15,6 +16,9 @@ data class EtatCombat(
     val historique: List<EntreeHistorique> = emptyList(),
     val degatsDuTour: Int = 0,
     val nomPersonnage: String = "",
+    val fiche: FichePersonnage? = null,
+    val pvActuel: Int = 0,
+    val pvTemporaires: Int = 0,
 ) {
     val attaqueSelectionnee: Attaque?
         get() = attaques.find { it.id == idAttaqueSelectionnee }
