@@ -3,7 +3,8 @@
     "allow": [
       "Bash(xargs ls -la)",
       "Bash(xargs ls)",
-      "Bash(xargs cat)"
+      "Bash(xargs cat)",
+      "Bash(git show-ref *)"
     ]
   }
 }

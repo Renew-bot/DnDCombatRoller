@@ -23,6 +23,9 @@ utilisée en **paysage**, à côté de la table, sans manipulation superflue.
   animation et détail des dés obtenus.
 - **Avantage / Désavantage** : bascule à 3 positions (Avantage / Normal / Désavantage),
   active automatiquement sur les jets 1d20 uniques ; le dé écarté est affiché barré.
+- **Jets naturels mis en évidence** : un **20 naturel** (or) ou un **1 naturel**
+  (rouge) sur un d20 unique est signalé dans le résultat en haut d'écran et dans
+  l'historique.
 - **Modificateur ponctuel** : boutons `−` / `+` pour ajuster le jet en cours sans
   toucher à la configuration de l'attaque (ex. bonus temporaire, inspiration).
 - **Compteur de dégâts du tour** : cumul automatique des dégâts infligés, remis à
@@ -36,12 +39,34 @@ utilisée en **paysage**, à côté de la table, sans manipulation superflue.
 - **Gestion des attaques** : création, modification, suppression et
   réorganisation par glisser-déposer (appui long) dans le panneau des attaques.
 - **Nom du personnage** : éditable directement depuis l'écran de combat.
-- **Fiche personnage** : écran dédié accessible depuis le combat (actuellement
-  un espace réservé, contenu à venir).
-- **Persistance locale** : la liste des attaques et le nom du personnage sont
-  sauvegardés entre les sessions (dégâts et historique remis à zéro à chaque
-  lancement, volontairement).
+- **Fiche personnage importée depuis aidedd.org** : CA, initiative, vitesse, PV
+  max, perception passive, caractéristiques, jets de sauvegarde et compétences
+  (maîtrise indiquée par un point de couleur) — voir
+  [Importer sa fiche de personnage](#importer-sa-fiche-de-personnage) ci-dessous.
+- **Suivi des PV et PV temporaires** : barre de vie avec boutons `−` / `+` (montant
+  ajustable) pour les PV normaux et les PV temporaires. Les PV temporaires
+  restent toujours visibles sur la barre, peuvent dépasser le total de PV, et
+  sont retirés en priorité sur les dégâts.
+- **Persistance locale** : la liste des attaques, le nom du personnage, la fiche
+  importée et les PV/PV temporaires sont sauvegardés entre les sessions (dégâts
+  du tour et historique remis à zéro à chaque lancement, volontairement).
 - **Mise en page adaptative** : disposition dédiée en portrait et en paysage.
+
+### Importer sa fiche de personnage
+
+L'écran **Fiche**, accessible depuis le bouton *Fiche* de l'écran de combat, lit le
+fichier HTML exporté par [aidedd.org](https://www.aidedd.org) (le générateur de
+fiche de personnage francophone).
+
+1. Sur aidedd.org, ouvrez votre fiche de personnage puis cliquez sur **Imprimer**
+   pour afficher la version imprimable.
+2. Depuis cette page imprimable, faites **Ctrl+S** (⌘+S sur Mac) pour
+   l'enregistrer sur votre appareil au format **page HTML**.
+3. Dans l'application, ouvrez le menu **Fiche**, appuyez sur **Importer**, puis
+   sélectionnez le fichier HTML enregistré à l'étape précédente.
+
+> ⚠️ Seul le format d'export d'aidedd.org est reconnu. Réimporter une fiche
+> réinitialise les PV actuels au maximum et les PV temporaires à zéro.
 
 ### Architecture
 
@@ -53,7 +78,7 @@ DnDCombatRoller/
 ├── androidApp/          — entrée Android (MainActivity, Manifest, ressources)
 ├── shared/               — code partagé
 │   └── src/commonMain/kotlin/com/example/dndcombatroller/
-│       ├── domain/       — modèles métier + moteur de dés (0 dépendance Android)
+│       ├── domain/       — modèles métier + moteur de dés + parseur de fiche (0 dépendance Android)
 │       ├── ui/           — composables Compose + ViewModel + state
 │       └── data/         — CombatRepository (interface) + InMemoryCombatRepository
 │   └── src/androidMain/kotlin/…/data/
@@ -66,9 +91,10 @@ DnDCombatRoller/
 Pattern **MVVM** :
 
 ```
-CombatScreen (Composable)
-    └── observe → CombatViewModel.uiState : StateFlow<CombatUiState>
+CombatScreen / FichePersoScreen (Composable)
+    └── observe → CombatViewModel.uiState : StateFlow<EtatCombat>
                       └── appelle → MoteurDeDes (domain/engine)
+                      └── appelle → FichePersonnageParseur (domain/engine)
                       └── lit/écrit → CombatRepository (data)
 ```
 
@@ -76,7 +102,7 @@ CombatScreen (Composable)
 
 | Règle | Détail |
 |---|---|
-| Noms du domaine métier | **Français** : `Attaque`, `EtapeDeJet`, `TypeDe`, `MoteurDeDes` |
+| Noms du domaine métier | **Français** : `Attaque`, `EtapeDeJet`, `TypeDe`, `MoteurDeDes`, `FichePersonnage` |
 | Code technique | **Anglais** : `ViewModel`, `StateFlow`, `Repository`, packages |
 | Modèles sérialisables | Annotation `@Serializable` (kotlinx.serialization) |
 | Composables | Aucune logique métier — tout passe par le ViewModel via `uiState` |
@@ -113,12 +139,20 @@ Utilisez les configurations de lancement de votre IDE, ou en ligne de commande :
   - JS : `./gradlew :shared:jsTest`
 - iOS : `./gradlew :shared:iosSimulatorArm64Test`
 
+### Builds & releases
+
+Le workflow GitHub Actions **Build & Release** (`.github/workflows/build-release.yml`)
+compile un `.apk` (Android), un `.deb` (Linux), un `.dmg` (macOS), un `.msi`
+(Windows) et une archive web, et publie une release GitHub dès qu'un tag
+`vX.Y.Z` est poussé (ou manuellement via `workflow_dispatch`).
+
 ### Limites connues / à venir
 
-- La **fiche personnage** est un écran vide (pas de PV, classe d'armure,
-  statistiques ni inventaire pour l'instant).
-- L'**historique** et le **compteur de dégâts** ne sont pas persistés : ils sont
-  réinitialisés à chaque lancement de l'application.
+- Seul le format d'export **aidedd.org** est reconnu par l'import de fiche
+  personnage ; les autres générateurs de fiche (D&D Beyond, etc.) ne sont pas
+  pris en charge pour l'instant.
+- L'**historique** et le **compteur de dégâts** du tour ne sont pas persistés :
+  ils sont réinitialisés à chaque lancement de l'application.
 - Pas de confirmation avant la suppression d'une attaque.
 - Orientation **paysage** privilégiée (`sensorLandscape`) ; le mode portrait
   existe mais avec une disposition simplifiée.
@@ -145,6 +179,8 @@ turns.
 - **Advantage / Disadvantage**: a 3-way toggle (Advantage / Normal /
   Disadvantage), auto-enabled for single-d20 rolls; the discarded die is shown
   struck through.
+- **Highlighted natural rolls**: a **natural 20** (gold) or **natural 1** (red)
+  on a single d20 is called out in both the top result card and the history.
 - **Ad-hoc modifier**: `−` / `+` buttons to tweak the current roll without
   editing the attack itself (e.g. temporary bonus, inspiration).
 - **Turn damage counter**: automatically sums damage dealt during the current
@@ -157,12 +193,35 @@ turns.
 - **Attack management**: create, edit, delete, and reorder attacks via
   long-press drag & drop in the attack panel.
 - **Character name**: editable directly from the combat screen.
-- **Character sheet**: a dedicated screen reachable from combat (currently a
-  placeholder, content coming later).
-- **Local persistence**: the attack list and character name are saved between
-  sessions (damage counter and history are intentionally reset on every
-  launch).
+- **Character sheet imported from aidedd.org**: AC, initiative, speed, max HP,
+  passive perception, ability scores, saving throws, and skills (proficiency
+  shown as a colored dot) — see
+  [Importing your character sheet](#importing-your-character-sheet) below.
+- **HP and temporary HP tracking**: a health bar with `−` / `+` buttons (with
+  an adjustable step amount) for both normal and temporary HP. Temporary HP
+  always stays visible on the bar, can exceed the HP total, and is depleted
+  first when damage is applied.
+- **Local persistence**: the attack list, character name, imported sheet, and
+  HP/temporary HP are saved between sessions (turn damage counter and history
+  are intentionally reset on every launch).
 - **Adaptive layout**: dedicated layouts for portrait and landscape.
+
+### Importing your character sheet
+
+The **Fiche** (character sheet) screen, reachable from the *Fiche* button on the
+combat screen, reads the HTML file exported by
+[aidedd.org](https://www.aidedd.org) (the French-language character sheet
+builder).
+
+1. On aidedd.org, open your character sheet and click **Imprimer** (Print) to
+   open the printable version.
+2. From that printable page, press **Ctrl+S** (⌘+S on Mac) to save it to your
+   device as an **HTML page**.
+3. In the app, open the **Fiche** menu, tap **Importer**, and pick the HTML
+   file you just saved.
+
+> ⚠️ Only aidedd.org's export format is recognized. Re-importing a sheet resets
+> current HP to max and temporary HP to zero.
 
 ### Architecture
 
@@ -174,7 +233,7 @@ DnDCombatRoller/
 ├── androidApp/          — Android entry point (MainActivity, Manifest, resources)
 ├── shared/               — shared code
 │   └── src/commonMain/kotlin/com/example/dndcombatroller/
-│       ├── domain/       — business models + dice engine (no Android dependency)
+│       ├── domain/       — business models + dice engine + sheet parser (no Android dependency)
 │       ├── ui/           — Compose composables + ViewModel + state
 │       └── data/         — CombatRepository (interface) + InMemoryCombatRepository
 │   └── src/androidMain/kotlin/…/data/
@@ -187,9 +246,10 @@ DnDCombatRoller/
 **MVVM** pattern:
 
 ```
-CombatScreen (Composable)
-    └── observes → CombatViewModel.uiState : StateFlow<CombatUiState>
+CombatScreen / FichePersoScreen (Composable)
+    └── observes → CombatViewModel.uiState : StateFlow<EtatCombat>
                       └── calls → MoteurDeDes (domain/engine, dice engine)
+                      └── calls → FichePersonnageParseur (domain/engine, sheet parser)
                       └── reads/writes → CombatRepository (data)
 ```
 
@@ -197,7 +257,7 @@ CombatScreen (Composable)
 
 | Rule | Detail |
 |---|---|
-| Domain names | **French** for business concepts: `Attaque`, `EtapeDeJet`, `TypeDe`, `MoteurDeDes` |
+| Domain names | **French** for business concepts: `Attaque`, `EtapeDeJet`, `TypeDe`, `MoteurDeDes`, `FichePersonnage` |
 | Technical code | **English**: `ViewModel`, `StateFlow`, `Repository`, packages |
 | Serializable models | `@Serializable` annotation (kotlinx.serialization) |
 | Composables | No business logic — everything flows through the ViewModel via `uiState` |
@@ -234,11 +294,19 @@ Use the run configurations provided by your IDE's toolbar, or these commands:
   - JS target: `./gradlew :shared:jsTest`
 - iOS tests: `./gradlew :shared:iosSimulatorArm64Test`
 
+### Builds & releases
+
+The **Build & Release** GitHub Actions workflow
+(`.github/workflows/build-release.yml`) builds an `.apk` (Android), a `.deb`
+(Linux), a `.dmg` (macOS), an `.msi` (Windows), and a web archive, and
+publishes a GitHub release whenever a `vX.Y.Z` tag is pushed (or manually via
+`workflow_dispatch`).
+
 ### Known limitations / roadmap
 
-- The **character sheet** is currently an empty placeholder (no HP, armor
-  class, ability scores, or inventory yet).
-- **History** and the **damage counter** are not persisted: both reset on
+- Only the **aidedd.org** export format is recognized by the character sheet
+  importer; other sheet builders (D&D Beyond, etc.) aren't supported yet.
+- **History** and the turn **damage counter** are not persisted: both reset on
   every app launch.
 - No confirmation prompt before deleting an attack.
 - **Landscape** orientation is the primary target (`sensorLandscape`);
