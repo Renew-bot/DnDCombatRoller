@@ -19,7 +19,7 @@ utilisée en **paysage**, à côté de la table, sans manipulation superflue.
 - **Bibliothèque d'attaques réutilisables** : chaque attaque est composée d'une ou
   plusieurs étapes (jet d'attaque, jet de dégâts, ou texte libre pour les effets
   spéciaux), avec expression de dés libre (`1d20+4`, `2d6+1d8+3`, etc.).
-- **Lancer en un geste** : sélection d'une attaque puis bouton **Lancer**, avec
+- **Lancer en une action** : sélection d'une attaque puis bouton **Lancer**, avec
   animation et détail des dés obtenus.
 - **Avantage / Désavantage** : bascule à 3 positions (Avantage / Normal / Désavantage),
   active automatiquement sur les jets 1d20 uniques ; le dé écarté est affiché barré.
